@@ -4,7 +4,9 @@
   "description": "SignalBoard is a Node/Express + PostgreSQL feature voting backend API built as a deliberate engineering lab to practice API instrumentation, N+1 query diagnosis, PostgreSQL index optimization, and layered architecture with documented architectural decisions.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js"
   },
   "repository": {
     "type": "git",

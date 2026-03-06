@@ -15,4 +15,9 @@ const timedQuery = async (text, params) => {
     return result;
 };
 
+//to prevent silent crashes if the database connection fails
+pool.on('error', (err) => {
+    console.error('Unexpected database error:', err);
+});
+
 module.exports = { pool, timedQuery };
