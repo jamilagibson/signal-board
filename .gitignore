@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Private notes
 Claude.private.md
+
+# Measurement logs
+logs/measurements.json
