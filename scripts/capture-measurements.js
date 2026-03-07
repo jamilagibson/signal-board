@@ -8,8 +8,6 @@
  *
  * Usage — pipe server output through this script:
  *   npm run dev 2>&1 | node scripts/capture-measurements.js
- *
- * @param {string} line - Each line of server stdout is tested against the timedQuery shape.
  */
 
 const readline = require('readline');

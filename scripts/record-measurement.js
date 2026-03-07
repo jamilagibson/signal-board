@@ -8,11 +8,6 @@
  *
  * Usage:
  *   node scripts/record-measurement.js --day 3 --test "n1-before" --queries 501 --total_ms 847
- *
- * @param {string} --day      - Day number (e.g. 3)
- * @param {string} --test     - Snapshot label (e.g. "n1-before", "n1-after", "index-before")
- * @param {string} --queries  - Total number of queries fired
- * @param {string} --total_ms - Total elapsed time in milliseconds
  */
 
 const fs = require('fs');
@@ -22,8 +17,8 @@ const MEASUREMENTS_FILE = path.join(__dirname, '../logs/measurements.json');
 
 /**
  * Reads a named flag value from process.argv.
- * @param {string} flag - The flag name, e.g. '--day'
- * @returns {string|null} The value following the flag, or null if not found.
+ * @param {string} flag - e.g. '--day'
+ * @returns {string|null}
  */
 const getArg = (flag) => {
     const idx = process.argv.indexOf(flag);
@@ -40,6 +35,7 @@ if (!day || !test || !queries || !total_ms) {
     process.exit(1);
 }
 
+// In summary entries, duration_ms = total elapsed time, rows = total query count
 const entry = {
     timestamp: new Date().toISOString(),
     day,
