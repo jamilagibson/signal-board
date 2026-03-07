@@ -9,8 +9,8 @@ const { submitRequest, fetchRequests } = require('../services/requests');
  * This is the earliest possible point to reject bad input — catching the problem at the
  * source rather than letting it propagate inward and fail with a cryptic database error.
  */
-const requestSchema = z.object({
-    title: z.string().min(1),
+const RequestSchema = z.object({
+    title: z.string().min(1, 'Title is required'),
     description: z.string().optional(),
     status: z.enum(['open', 'in-progress', 'shipped']).default('open'),
     user_id: z.number().int().positive(),
@@ -27,13 +27,13 @@ const requestSchema = z.object({
  * @param {import('express').NextFunction} next
  */
 const postRequest = async (req, res, next) => {
-    const parsed = requestSchema.safeParse(req.body);
+    const parsed = RequestSchema.safeParse(req.body);
 
     if (!parsed.success) {
         return res.status(400).json({
             error: 'Validation failed',
             code: 'VALIDATION_ERROR',
-            details: parsed.error.flatten(),
+            details: z.flattenError(parsed.error),
         });
     }
 
