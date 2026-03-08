@@ -1,4 +1,4 @@
-/**
+my /**
  * Measurement capture script.
  * Reads server stdout line by line, identifies timedQuery log entries by their
  * JSON shape { query, duration_ms, rows }, and appends them to logs/measurements.json.
