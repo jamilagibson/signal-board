@@ -1,5 +1,5 @@
 const { z } = require('zod');
-const { submitRequest, fetchRequests } = require('../services/requests');
+const { submitRequest, fetchRequests, invalidateCache } = require('../services/requests');
 
 /**
  * Zod schema for POST /requests.
@@ -39,6 +39,7 @@ const postRequest = async (req, res, next) => {
 
     try {
         const request = await submitRequest(parsed.data);
+        await invalidateCache();
         res.status(201).json(request);
     } catch (err) {
         next(err);
@@ -56,7 +57,7 @@ const postRequest = async (req, res, next) => {
  */
 const getRequests = async (req, res, next) => {
     try {
-        const requests = await fetchRequests();
+        const requests = await fetchRequests(req.requestId);
         res.status(200).json(requests);
     } catch (err) {
         next(err);

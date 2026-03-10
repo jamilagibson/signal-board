@@ -64,6 +64,19 @@ See [`docs/api.md`](docs/api.md) for full request/response shapes and error code
 
 **22x faster. 500 fewer database round trips per request.**
 
+### Redis Cache Layer (Day 6)
+
+`GET /requests` response cached in Redis with a 60-second TTL.
+
+| | Duration |
+|---|---|
+| Cache miss (db hit) | ~282ms |
+| Cache hit (Redis) | ~2ms |
+
+**~100x faster on cache hits. Zero database queries served from cache.**
+
+---
+
 ### Index Strategy (Day 4)
 
 Two indexes added after EXPLAIN ANALYZE diagnosis:
@@ -103,8 +116,11 @@ node scripts/record-measurement.js --day 3 --test "n1-before" --queries 501 --to
 
 ## Roadmap
 
-### Day 6 — AI Digest Layer (`feature/ai-digest`)
+### Day 6 — Redis Cache Layer (`feature/redis-cache`)
+`GET /requests` response cached in Redis with TTL-based invalidation. Cache misses fall through to PostgreSQL; cache hits return in under 2ms. Adds the third optimization layer — after query restructuring (Day 3) and indexing (Day 4) — demonstrating that sometimes the right answer isn't optimizing the query, it's not hitting the database at all.
+
+### Day 7 — AI Digest Layer (`feature/ai-digest`)
 `POST /digest` aggregates the last 24 hours of captured metrics and sends them to the Claude API, returning a natural language health summary with a prioritized recommendation. Digest is persisted to PostgreSQL for reproducibility.
 
-### Day 7 — Prompt Observability Panel (`feature/prompt-observability`)
+### Day 8 — Prompt Observability Panel (`feature/prompt-observability`)
 Every Claude API call is logged to a `prompt_logs` table capturing the full prompt, response, latency, and token counts. Exposed via `GET /prompts` and rendered in a WCAG 2.2 AA accessible React table — treating AI services as first-class instrumented components.
