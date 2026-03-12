@@ -19,6 +19,10 @@
 const requestLogger = (req, res, next) => {
     const requestId = crypto.randomUUID();
     const start = process.hrtime.bigint();
+    // Capture originalUrl now — Express mutates req.url as it strips router mount
+    // prefixes, so req.path read inside res.on('finish') would show '/' for every
+    // routed request. req.originalUrl is set once and never touched again.
+    const path = req.originalUrl;
 
     // Attach to req so downstream middleware and controllers can reference it
     req.requestId = requestId;
@@ -33,7 +37,7 @@ const requestLogger = (req, res, next) => {
         console.log(JSON.stringify({
             requestId,
             method: req.method,
-            path: req.path,
+            path,
             status: res.statusCode,
             duration_ms: parseFloat(duration.toFixed(2)),
         }));

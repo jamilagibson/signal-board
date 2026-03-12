@@ -70,10 +70,10 @@ See [`docs/api.md`](docs/api.md) for full request/response shapes and error code
 
 | | Duration |
 |---|---|
-| Cache miss (db hit) | ~282ms |
-| Cache hit (Redis) | ~2ms |
+| Cache miss (db hit) | ~221ms |
+| Cache hit (Redis) | ~7ms |
 
-**~100x faster on cache hits. Zero database queries served from cache.**
+**~32x faster on cache hits. Zero database queries served from cache.**
 
 ---
 
@@ -97,6 +97,7 @@ Architectural decisions documented in [`docs/`](docs/):
 - [ADR-003](docs/ADR-003-n1-query-fix.md) — N+1 diagnosis and LEFT JOIN fix
 - [ADR-004](docs/ADR-004-indexing.md) — PostgreSQL index strategy
 - [ADR-005](docs/ADR-005-error-handling.md) — AppError class and centralized error handling
+- [ADR-006](docs/ADR-006-redis-caching.md) — Redis cache layer for GET /requests
 
 ---
 
@@ -115,9 +116,6 @@ node scripts/record-measurement.js --day 3 --test "n1-before" --queries 501 --to
 ---
 
 ## Roadmap
-
-### Day 6 — Redis Cache Layer (`feature/redis-cache`)
-`GET /requests` response cached in Redis with TTL-based invalidation. Cache misses fall through to PostgreSQL; cache hits return in under 2ms. Adds the third optimization layer — after query restructuring (Day 3) and indexing (Day 4) — demonstrating that sometimes the right answer isn't optimizing the query, it's not hitting the database at all.
 
 ### Day 7 — AI Digest Layer (`feature/ai-digest`)
 `POST /digest` aggregates the last 24 hours of captured metrics and sends them to the Claude API, returning a natural language health summary with a prioritized recommendation. Digest is persisted to PostgreSQL for reproducibility.
