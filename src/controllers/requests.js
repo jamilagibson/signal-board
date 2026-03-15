@@ -10,7 +10,7 @@ const { submitRequest, fetchRequests, invalidateCache } = require('../services/r
  * source rather than letting it propagate inward and fail with a cryptic database error.
  */
 const RequestSchema = z.object({
-    title: z.string().min(1, 'Title is required'),
+    title: z.string({ error: 'Title is required' }).min(1, 'Title is required'),
     description: z.string().optional(),
     status: z.enum(['open', 'in-progress', 'shipped']).default('open'),
     user_id: z.number().int().positive(),
