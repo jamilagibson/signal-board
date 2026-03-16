@@ -1,4 +1,8 @@
 const { createRequest, getAllRequests } = require('../db/requests');
+const redis = require('../db/redisClient');
+
+const CACHE_KEY = 'feature_requests';
+const CACHE_TTL = 60; // seconds
 
 /**
  * Submits a new feature request.
@@ -24,8 +28,33 @@ const submitRequest = async ({ title, description, status, user_id }) => {
  *
  * @returns {Promise<Array<object>>} All feature requests with vote_count appended.
  */
-const fetchRequests = async () => {
-    return await getAllRequests();
+const fetchRequests = async (requestId) => {
+    try {
+        const cached = await redis.get(CACHE_KEY);
+        if (cached) {
+            return JSON.parse(cached);
+        }
+    } catch (err) {
+        console.error({ event: 'redis_cache_miss', requestId, message: err.message });
+    }
+
+    const rows = await getAllRequests();
+
+    try {
+        await redis.set(CACHE_KEY, JSON.stringify(rows), 'EX', CACHE_TTL);
+    } catch (err) {
+        console.error({ event: 'redis_cache_write_fail', requestId, message: err.message });
+    }
+
+    return rows;
 };
 
-module.exports = { submitRequest, fetchRequests };
+const invalidateCache = async () => {
+    try {
+        await redis.del(CACHE_KEY);
+    } catch (err) {
+        console.error({ event: 'redis_invalidate_fail', message: err.message });
+    }
+};
+
+module.exports = { submitRequest, fetchRequests, invalidateCache };

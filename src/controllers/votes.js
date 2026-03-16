@@ -1,4 +1,5 @@
 const { castVote } = require('../services/votes');
+const { invalidateCache } = require('../services/requests');
 
 /**
  * POST /votes
@@ -20,6 +21,7 @@ const postVote = async (req, res) => {
 
     try {
         const vote = await castVote(user_id, feature_request_id);
+        await invalidateCache();
         res.status(201).json(vote);
     } catch (err) {
         if (err.code === '23505') {
