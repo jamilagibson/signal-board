@@ -1,4 +1,10 @@
+const { z } = require('zod');
 const { castVote } = require('../services/votes');
+
+const VoteSchema = z.object({
+    user_id: z.number().int().positive(),
+    feature_request_id: z.number().int().positive(),
+});
 
 /**
  * POST /votes
@@ -16,7 +22,16 @@ const { castVote } = require('../services/votes');
  * @param {import('express').Response} res
  */
 const postVote = async (req, res) => {
-    const { user_id, feature_request_id } = req.body;
+    const result = VoteSchema.safeParse(req.body);
+    if (!result.success) {
+        return res.status(400).json({
+            error: 'Validation failed',
+            code: 'VALIDATION_ERROR',
+            details: z.flattenError(result.error),
+        });
+    }
+
+    const { user_id, feature_request_id } = result.data;
 
     try {
         const vote = await castVote(user_id, feature_request_id);
