@@ -3,6 +3,9 @@ const app = express();
 
 app.use(express.json());
 
+const requestLogger = require('./middleware/requestLogger');
+app.use(requestLogger);
+
 const usersRouter = require('./routes/users');
 app.use('/users', usersRouter);
 
