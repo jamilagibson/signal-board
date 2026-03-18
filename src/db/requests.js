@@ -16,36 +16,29 @@ const createRequest = async (title, description, status, user_id) => {
 };
 
 /**
- * Fetches all feature requests, then fires one COUNT query per request to get vote totals.
+ * Fetches all feature requests with vote counts in a single query.
+ * Replaces the N+1 loop diagnosed on Day 3.
  *
- * N+1 ANTI-PATTERN — preserved intentionally for Day 3 diagnosis.
+ * LEFT JOIN ensures feature requests with zero votes are included.
+ * GROUP BY feature_requests.id aggregates one vote_count per request.
  *
- * Why this is an anti-pattern: for N feature requests, this function fires N+1 queries —
- * one SELECT to fetch all requests, then one COUNT per row. With 500 requests, that's 501
- * round trips to the database. In production this appears as a spike of near-identical
- * queries in slow query logs, often each fast individually but catastrophic in aggregate.
- * The fix (a single JOIN or subquery) is introduced on Day 3 after we've measured the cost.
+ * Day 3 before: 501 queries, ~5856ms
+ * Day 3 after:  1 query, ~263ms
  *
- * @returns {Promise<Array<object>>} Feature requests with a vote_count field appended.
+ * @returns {Promise<Array<object>>} Feature requests with vote_count appended.
  */
 const getAllRequests = async () => {
-    const requests = await timedQuery('SELECT * FROM feature_requests', []);
+    const result = await timedQuery(
+        `SELECT feature_requests.*,
+                COUNT(votes.id)::int AS vote_count
+         FROM feature_requests
+         LEFT JOIN votes ON votes.feature_request_id = feature_requests.id
+         GROUP BY feature_requests.id
+         ORDER BY feature_requests.id`,
+        []
+    );
 
-    const results = [];
-    for (const request of requests.rows) {
-        // N+1 ANTI-PATTERN — preserved intentionally for Day 3 diagnosis.
-        // Each iteration fires a separate round trip to the database.
-        const countResult = await timedQuery(
-            'SELECT COUNT(*) FROM votes WHERE feature_request_id = $1',
-            [request.id]
-        );
-        results.push({
-            ...request,
-            vote_count: parseInt(countResult.rows[0].count, 10),
-        });
-    }
-
-    return results;
+    return result.rows;
 };
 
 module.exports = { createRequest, getAllRequests };
